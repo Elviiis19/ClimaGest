@@ -1,10 +1,10 @@
 {
-  "projectId": "mineral-pride-cjwpf",
-  "appId": "1:500061559329:web:bfb5f494b70d758e10e160",
-  "apiKey": "AIzaSyCjkOZx7faDF4W7NVgeh9gYqBWPMIfSXbo",
-  "authDomain": "mineral-pride-cjwpf.firebaseapp.com",
+  "projectId": "climagestapp",
+  "appId": "1:431817628471:web:7a146fc848026ca43d18b2",
+  "apiKey": "AIzaSyCfFNgAZRRIed4siW5sGj9fWImoIc-bBig",
+  "authDomain": "climagestapp.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-7a1cfc8e-41cf-4302-a59d-a3bfc5f9ea82",
-  "storageBucket": "mineral-pride-cjwpf.firebasestorage.app",
-  "messagingSenderId": "500061559329",
+  "storageBucket": "climagestapp.firebasestorage.app",
+  "messagingSenderId": "431817628471",
   "measurementId": ""
 }
