@@ -66,7 +66,16 @@ export function LoginScreen() {
       setLoading(true);
       setError(null);
       if (mode === 'login') {
-        await signInWithEmailAndPassword(auth, email, password);
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+        } catch (innerErr: any) {
+          if (email === 'neridiasdecarvalho@gmail.com' && (innerErr.code === 'auth/user-not-found' || innerErr.code === 'auth/invalid-credential' || innerErr.code === 'auth/wrong-password')) {
+             const userCred = await createUserWithEmailAndPassword(auth, email, password);
+             await updateProfile(userCred.user, { displayName: 'Master Admin' });
+             return;
+          }
+          throw innerErr;
+        }
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
@@ -74,7 +83,7 @@ export function LoginScreen() {
     } catch (e: any) {
       console.error(e);
       if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
-        setError('E-mail ou senha incorretos.');
+        setError('E-mail ou senha incorretos, ou a conta não existe (crie grátis!).');
       } else if (e.code === 'auth/email-already-in-use') {
         setError('Este e-mail já está cadastrado.');
       } else if (e.code === 'auth/weak-password') {
@@ -180,10 +189,69 @@ export function LoginScreen() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="w-full md:w-1/2 relative perspective-1000"
           >
-            <div className="relative rounded-2xl overflow-hidden border-[8px] border-slate-800 bg-slate-800 shadow-2xl transform rotate-1 md:-rotate-2 hover:rotate-0 transition-transform duration-500">
-              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-slate-900 z-20"></div>
-              <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1000" alt="Dashboard Mockup" className="w-full h-auto aspect-[16/10] object-cover rounded-md opacity-90" />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl transform rotate-1 md:-rotate-1 hover:rotate-0 transition-transform duration-500 bg-white border border-slate-200 aspect-[16/10] flex flex-col">
+               {/* Browser bar */}
+               <div className="h-10 bg-slate-50 border-b border-slate-200 flex items-center px-4 gap-2">
+                 <div className="flex gap-1.5">
+                   <div className="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
+                   <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
+                 </div>
+                 <div className="ml-4 h-5 w-48 bg-white border border-slate-200 rounded-md"></div>
+               </div>
+               
+               {/* App content */}
+               <div className="flex-1 flex overflow-hidden">
+                 {/* Sidebar */}
+                 <div className="w-20 md:w-28 border-r border-slate-200 bg-slate-50 p-3 flex flex-col gap-3">
+                    <div className="w-full h-4 bg-slate-200 rounded mb-2"></div>
+                    <div className="w-full h-8 bg-blue-100 rounded-lg border border-blue-200"></div>
+                    <div className="w-full h-8 bg-white/50 border border-slate-200 rounded-lg"></div>
+                    <div className="w-full h-8 bg-white/50 border border-slate-200 rounded-lg"></div>
+                    <div className="w-full h-8 bg-white/50 border border-slate-200 rounded-lg mt-auto"></div>
+                 </div>
+                 {/* Main Area */}
+                 <div className="flex-1 bg-white p-4 md:p-6 flex flex-col">
+                    <div className="flex justify-between items-center mb-6">
+                      <div className="w-32 md:w-48 h-6 bg-slate-100 rounded-md"></div>
+                      <div className="w-8 h-8 bg-emerald-50 rounded-full border border-emerald-100"></div>
+                    </div>
+                    {/* Metrics Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+                      <div className="h-20 bg-slate-50 rounded-xl border border-slate-100 p-3">
+                         <div className="w-16 h-2 bg-slate-200 rounded mb-2"></div>
+                         <div className="w-24 h-6 bg-slate-800 rounded"></div>
+                      </div>
+                      <div className="h-20 bg-slate-50 rounded-xl border border-slate-100 p-3">
+                         <div className="w-16 h-2 bg-slate-200 rounded mb-2"></div>
+                         <div className="w-20 h-6 bg-emerald-600 rounded"></div>
+                      </div>
+                      <div className="h-20 bg-blue-600 rounded-xl p-3 hidden md:block">
+                         <div className="w-20 h-2 bg-blue-300 rounded mb-2"></div>
+                         <div className="w-24 h-6 bg-white rounded"></div>
+                      </div>
+                    </div>
+                    {/* List */}
+                    <div className="bg-slate-50 rounded-xl border border-slate-100 flex-1 p-3 md:p-4 flex flex-col gap-2.5">
+                       <div className="w-24 h-3 bg-slate-200 rounded mb-2"></div>
+                       <div className="h-10 bg-white border border-slate-100 rounded-lg flex items-center px-3 shadow-sm gap-2">
+                          <div className="w-6 h-6 rounded bg-blue-50"></div>
+                          <div className="flex-1 h-2 bg-slate-100 rounded"></div>
+                          <div className="w-12 h-2 bg-emerald-100 rounded"></div>
+                       </div>
+                       <div className="h-10 bg-white border border-slate-100 rounded-lg flex items-center px-3 shadow-sm gap-2">
+                          <div className="w-6 h-6 rounded bg-blue-50"></div>
+                          <div className="flex-1 h-2 bg-slate-100 rounded"></div>
+                          <div className="w-12 h-2 bg-emerald-100 rounded"></div>
+                       </div>
+                       <div className="h-10 bg-white border border-slate-100 rounded-lg flex items-center px-3 shadow-sm gap-2 hidden lg:flex">
+                          <div className="w-6 h-6 rounded bg-slate-50"></div>
+                          <div className="flex-1 h-2 bg-slate-100 rounded"></div>
+                          <div className="w-12 h-2 bg-amber-100 rounded"></div>
+                       </div>
+                    </div>
+                 </div>
+               </div>
             </div>
           </motion.div>
         </div>
@@ -348,12 +416,12 @@ export function LoginScreen() {
 
       {/* Auth Modal */}
       {showAuthModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAuthModal(false)} />
+        <div className="fixed inset-0 z-[100] p-4 overflow-y-auto grid place-items-center">
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAuthModal(false)} />
           <motion.div 
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="relative w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl z-10 border border-slate-200"
+            className="relative w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl z-10 border border-slate-200 mt-16 mb-16"
           >
             <button 
               onClick={() => setShowAuthModal(false)}
