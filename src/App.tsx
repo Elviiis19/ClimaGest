@@ -70,7 +70,17 @@ export default function App() {
       if (currentUser) {
         const storedProfile = localStorage.getItem(`profile_${currentUser.uid}`);
         if (storedProfile) {
-          setProfileSetup(JSON.parse(storedProfile));
+          let parsedProfile = JSON.parse(storedProfile);
+          if (parsedProfile.plan === 'trial' && !parsedProfile.extendedTrial) {
+            if (parsedProfile.trialEnd) {
+              const prevEnd = new Date(parsedProfile.trialEnd);
+              prevEnd.setDate(prevEnd.getDate() + 4);
+              parsedProfile.trialEnd = prevEnd.toISOString();
+            }
+            parsedProfile.extendedTrial = true;
+            localStorage.setItem(`profile_${currentUser.uid}`, JSON.stringify(parsedProfile));
+          }
+          setProfileSetup(parsedProfile);
         } else {
           setProfileSetup({ name: currentUser.displayName || '', company: '', done: false });
         }

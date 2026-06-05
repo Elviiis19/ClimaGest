@@ -18,7 +18,7 @@ export function OnboardingScreen({
     if (!name || !company) return;
     
     const end = new Date();
-    end.setDate(end.getDate() + 3);
+    end.setDate(end.getDate() + 7);
     const profileData = { 
       name, 
       company, 

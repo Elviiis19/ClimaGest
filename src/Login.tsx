@@ -88,101 +88,210 @@ export function LoginScreen() {
     }
   };
 
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row overflow-hidden">
-      
-      {/* LEFT SIDE: Marketing & Copy */}
-      <div className="md:w-1/2 p-8 md:p-16 flex flex-col justify-center relative overflow-hidden bg-white">
-        <motion.div 
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="max-w-xl mx-auto z-10"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold mb-8 uppercase tracking-wide">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-            </span>
-            Sistema SaaS para Refrigeração
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans overflow-x-hidden">
+      {/* Header / Navbar */}
+      <header className="absolute top-0 left-0 right-0 z-50 px-4 py-6 md:px-8 bg-white/80 backdrop-blur-md border-b border-slate-100">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+             <h2 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-1.5">
+              Clima Gest <span className="text-[10px] bg-blue-50 text-blue-600 font-extrabold px-1.5 py-0.5 rounded uppercase">PRO</span>
+            </h2>
+          </div>
+          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+            <a href="#recursos" className="hover:text-blue-600 transition-colors">Recursos</a>
+            <a href="#depoimentos" className="hover:text-blue-600 transition-colors">Depoimentos</a>
+            <a href="#precos" className="hover:text-blue-600 transition-colors">Preços</a>
+          </nav>
+          <div>
+            <button 
+              onClick={() => { setMode('login'); setShowAuthModal(true); }}
+              className="text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-5 rounded-xl transition-all shadow-sm"
+            >
+              Entrar no Painel
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-4 overflow-hidden">
+        {/* Background Texture/Image */}
+        <div className="absolute inset-0 z-0">
+          <img src="https://images.unsplash.com/photo-1581092918056-0c4c3cb37151?auto=format&fit=crop&q=80" alt="background" className="w-full h-full object-cover opacity-[0.03]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-white/90 via-slate-50/90 to-blue-50/80 backdrop-blur-[2px]" />
+          <div className="absolute top-0 right-0 -mr-32 -mt-32 w-[600px] h-[600px] rounded-full bg-blue-100/40 blur-3xl" />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row items-center gap-12 lg:gap-20">
+          {/* Left: Copy & CTA */}
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="w-full md:w-1/2 flex flex-col"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold mb-6 uppercase tracking-wide w-max">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+              </span>
+              Sistema SaaS para Refrigeração
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight mb-6">
+              Escale sua empresa de <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Climatização</span>
+            </h1>
+            
+            <p className="text-slate-600 text-lg lg:text-xl font-medium mb-10 leading-relaxed max-w-lg">
+              Gestão de ordens de serviço, manutenção preventiva (PMOC), finanças e controle de clientes. Tudo em um único lugar, feito para profissionais.
+            </p>
+            
+            <div className="space-y-4 mb-10">
+              {[
+                "Histórico e Prontuários dos Equipamentos",
+                "Gestão de Agendamentos e Calendários",
+                "Alertas de Vencimento de Manutenção"
+              ].map((feature, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <CheckCircle2 size={24} className="text-blue-500 shrink-0" />
+                  <span className="text-base font-bold text-slate-700">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4">
+              <button 
+                onClick={() => { setMode('register'); setShowAuthModal(true); }}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-black text-lg py-4 px-8 rounded-2xl shadow-lg hover:shadow-blue-500/25 transition-all outline-none focus:ring-4 focus:ring-blue-100 w-full sm:w-auto"
+              >
+                COMEÇAR AGORA - GRÁTIS
+              </button>
+              <p className="text-sm font-semibold text-slate-500 mt-4 ml-2">Não requer cartão de crédito. Teste 7 dias.</p>
+            </div>
+          </motion.div>
+
+          {/* Right: Mockup */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="w-full md:w-1/2 relative perspective-1000"
+          >
+            <div className="relative rounded-2xl overflow-hidden border-[8px] border-slate-800 bg-slate-800 shadow-2xl transform rotate-1 md:-rotate-2 hover:rotate-0 transition-transform duration-500">
+              <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-slate-900 z-20"></div>
+              <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80" alt="Dashboard Mockup" className="w-full h-auto aspect-[16/10] object-cover rounded-md opacity-90" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent"></div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Social Proof / Depoimentos */}
+      <section id="depoimentos" className="py-20 bg-white border-y border-slate-100">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight mb-4">Usado e Aprovado por Profissionais</h3>
+            <p className="text-slate-500 font-medium text-lg">Veja o que dizem as empresas que modernizaram sua gestão conosco.</p>
           </div>
           
-          <h1 className="text-4xl md:text-5xl font-black text-slate-800 tracking-tight leading-tight mb-6">
-            Escale sua empresa de <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Climatização</span>
-          </h1>
-          
-          <p className="text-slate-500 text-lg md:text-xl font-medium mb-10 leading-relaxed">
-            Gestão de ordens de serviço, manutenção preventiva (PMOC), finanças e controle de clientes. Tudo em um único lugar.
-          </p>
-          
-          <div className="space-y-4 mb-12">
+          <div className="grid md:grid-cols-3 gap-8">
             {[
-              "Histórico e Prontuários dos Equipamentos",
-              "Gestão de Agendamentos e Calendário de Limpezas",
-              "Alertas de Vencimento de Manutenção Periódica",
-              "Geração de Etiquetas PMOC via QR Code",
-              "Controle de Finanças e Reposição de Estoque"
-            ].map((feature, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <CheckCircle2 size={20} className="text-emerald-500" />
-                <span className="text-sm font-semibold text-slate-700">{feature}</span>
+              { name: "Carlos Mendes", company: "FrioMax Climatização", text: "Ajudou a organizar nossas 50 OS por semana de forma impecável. O controle de PMOC salvou nosso tempo." },
+              { name: "Roberto Alves", company: "Alves Refrigeração", text: "Antes eu perdia orçamentos por demora. Agora, envio tudo na hora pelo sistema. Aumentou minha conversão em 40%." },
+              { name: "Mariana Souza", company: "GeloSul Ar Condicionado", text: "O controle financeiro integrado ao estoque é perfeito. Sei exatamente o que preciso comprar para cada OS agendada." }
+            ].map((dep, i) => (
+              <div key={i} className="bg-slate-50 p-8 rounded-3xl border border-slate-100 hover:shadow-lg transition-shadow">
+                <div className="flex gap-1 text-yellow-400 mb-6">
+                  {[1,2,3,4,5].map(s => <svg key={s} width="20" height="20" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>)}
+                </div>
+                <p className="text-slate-700 font-semibold mb-6 leading-relaxed">"{dep.text}"</p>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-lg">
+                    {dep.name.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-slate-900">{dep.name}</h4>
+                    <p className="text-xs font-semibold text-slate-500 uppercase">{dep.company}</p>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-        </motion.div>
-        
-        {/* Background abstract decorations */}
-        <div className="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 rounded-full bg-blue-50/50 blur-3xl" />
-        <div className="absolute bottom-0 left-0 -ml-32 -mb-32 w-96 h-96 rounded-full bg-cyan-50/50 blur-3xl" />
-      </div>
+        </div>
+      </section>
 
-      {/* RIGHT SIDE: Login / Subscription Form */}
-      <div className="md:w-1/2 bg-slate-50 p-8 md:p-16 flex flex-col justify-center items-center">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="w-full max-w-md bg-white rounded-3xl p-8 border border-slate-200 shadow-xl"
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center justify-center gap-1.5 mb-2">
-              Clima Gest <span className="text-xs bg-blue-50 text-blue-600 font-extrabold px-1.5 py-0.5 rounded uppercase">PRO</span>
-            </h2>
-            <p className="text-sm text-slate-500 font-medium">{mode === 'login' ? 'Faça login para acessar o painel' : 'Crie sua conta gratuitamente'}</p>
+      {/* Footer */}
+      <footer className="bg-slate-900 text-slate-400 py-12 text-center text-sm font-medium">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2 text-white">
+             <span className="font-black text-xl">Clima Gest</span>
           </div>
+          <div className="flex gap-6">
+            <a href="#" className="hover:text-white transition">Termos de Uso</a>
+            <a href="#" className="hover:text-white transition">Privacidade</a>
+            <a href="#" className="hover:text-white transition">Contato</a>
+          </div>
+          <p>© {new Date().getFullYear()} Clima Gest PRO. Todos os direitos reservados.</p>
+        </div>
+      </footer>
 
-          {error && (
-            <div className="bg-rose-50 text-rose-600 p-4 rounded-xl text-xs font-semibold mb-6 flex items-start gap-2">
-              <AlertTriangle size={16} className="shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <button
-              type="button"
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full relative bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all outline-none focus:ring-4 focus:ring-slate-100 disabled:opacity-50"
+      {/* Auth Modal */}
+      {showAuthModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setShowAuthModal(false)} />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-md bg-white rounded-3xl p-8 shadow-2xl z-10 border border-slate-200"
+          >
+            <button 
+              onClick={() => setShowAuthModal(false)}
+              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold transition-colors"
             >
-              <svg width="20" height="20" viewBox="0 0 48 48">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-              </svg>
-              <span>{loading ? 'Acessando...' : 'Entrar com Google'}</span>
+              ✕
             </button>
             
-            <div className="flex items-center gap-3 py-2">
-              <div className="h-px bg-slate-200 flex-1"></div>
-              <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">ou e-mail</span>
-              <div className="h-px bg-slate-200 flex-1"></div>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center justify-center gap-1.5 mb-2">
+                Clima Gest <span className="text-xs bg-blue-50 text-blue-600 font-extrabold px-1.5 py-0.5 rounded uppercase">PRO</span>
+              </h2>
+              <p className="text-sm text-slate-500 font-medium">{mode === 'login' ? 'Faça login para acessar o painel' : 'Crie sua conta gratuitamente'}</p>
             </div>
 
-            <form onSubmit={handleEmailAuth} className="space-y-4">
-              {mode === 'register' && (
-                <div>
+            {error && (
+              <div className="bg-rose-50 text-rose-600 p-4 rounded-xl text-xs font-semibold mb-6 flex items-start gap-2">
+                <AlertTriangle size={16} className="shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                disabled={loading}
+                className="w-full relative bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all outline-none focus:ring-4 focus:ring-slate-100 disabled:opacity-50"
+              >
+                <svg width="20" height="20" viewBox="0 0 48 48">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                </svg>
+                <span>{loading ? 'Acessando...' : 'Entrar com Google'}</span>
+              </button>
+              
+              <div className="flex items-center gap-3 py-2">
+                <div className="h-px bg-slate-200 flex-1"></div>
+                <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">ou e-mail</span>
+                <div className="h-px bg-slate-200 flex-1"></div>
+              </div>
+
+              <form onSubmit={handleEmailAuth} className="space-y-4">
+                {mode === 'register' && (
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                       <Users size={18} />
@@ -195,10 +304,8 @@ export function LoginScreen() {
                       onChange={(e) => setName(e.target.value)}
                     />
                   </div>
-                </div>
-              )}
+                )}
 
-              <div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <Mail size={18} />
@@ -211,9 +318,7 @@ export function LoginScreen() {
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
-              </div>
 
-              <div>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <Lock size={18} />
@@ -226,40 +331,45 @@ export function LoginScreen() {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all outline-none focus:ring-4 focus:ring-blue-100 disabled:opacity-50"
+                >
+                  <span>{loading ? 'Aguarde...' : (mode === 'login' ? 'Acessar Conta' : 'Criar Conta Grátis')}</span>
+                </button>
+              </form>
+
+              <div className="text-center mt-6">
+                <button 
+                  type="button" 
+                  onClick={() => {
+                    setMode(mode === 'login' ? 'register' : 'login');
+                    setError(null);
+                  }}
+                  className="text-sm font-semibold text-slate-600 hover:text-blue-600"
+                >
+                  {mode === 'login' ? 'Não tem uma conta? Crie uma grátis' : 'Já tem uma conta? Fazer Login'}
+                </button>
               </div>
+              
+              {mode === 'login' && (
+                <div className="text-center mt-2">
+                   <a href="#" className="text-xs font-semibold text-slate-400 hover:text-slate-600">Esqueceu a senha?</a>
+                </div>
+              )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all outline-none focus:ring-4 focus:ring-blue-100 disabled:opacity-50"
-              >
-                <span>{loading ? 'Aguarde...' : (mode === 'login' ? 'Entrar no Painel' : 'Criar Conta Grátis')}</span>
-              </button>
-            </form>
-
-            <div className="text-center mt-6">
-              <button 
-                type="button" 
-                onClick={() => {
-                  setMode(mode === 'login' ? 'register' : 'login');
-                  setError(null);
-                }}
-                className="text-sm font-semibold text-slate-600 hover:text-blue-600"
-              >
-                {mode === 'login' ? 'Não tem uma conta? Cadastre-se' : 'Já tem uma conta? Fazer Login'}
-              </button>
+              {mode === 'register' && (
+                <p className="text-[10px] text-center text-slate-400 leading-relaxed font-medium mt-4">
+                  Ao criar sua conta, você recebe um <strong className="text-slate-600">teste gratuito</strong>.<br/>
+                  Após experimentar, escolha o plano ideal para você.
+                </p>
+              )}
             </div>
-            
-            {mode === 'register' && (
-              <p className="text-[10px] text-center text-slate-400 leading-relaxed font-medium mt-4">
-                Ao criar sua conta, você recebe um <strong className="text-slate-600">teste de 3 dias grátis</strong>.<br/>
-                Após, escolha um plano (Mensal, Trimestral, Semestral ou Anual).
-              </p>
-            )}
-          </div>
-        </motion.div>
-      </div>
-      
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
