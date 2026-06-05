@@ -362,7 +362,7 @@ export default function App() {
               <h1 className="text-xl font-black text-slate-800 tracking-tight flex items-center gap-1">
                 Clima Gest <span className="text-[10px] bg-blue-50 text-blue-600 font-extrabold px-1.5 py-0.5 rounded uppercase">PRO</span>
               </h1>
-              <p className="text-[10px] text-slate-400 font-medium">Refrigeração & Ar Condicionado</p>
+              <p className="text-[10px] text-slate-400 font-medium">Refrigeração & Climatização</p>
             </div>
           </div>
 
@@ -451,42 +451,59 @@ export default function App() {
               id="dashboard-tab-panel"
             >
               
+              <div className="flex flex-col gap-1 mb-6 mt-2">
+                <h2 className="text-2xl font-black text-slate-800 tracking-tight">Visão Geral da Operação</h2>
+                <p className="text-sm text-slate-500 font-medium">Acompanhe os principais indicadores do seu negócio de climatização.</p>
+              </div>
+
               {/* INÍCIO: METRICS OVERVIEW GRID */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 
-                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-2xs space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Clientes Ativos</span>
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-3xl font-black text-slate-850">{clients.length}</span>
-                    <span className="text-xs text-blue-600 font-semibold bg-blue-50 px-1.5 py-0.5 rounded">Cadastros</span>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col justify-between min-h-[120px]">
+                  <div className="absolute -top-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity text-slate-900 pointer-events-none">
+                    <Users size={100} />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Clientes Ativos</span>
+                  <div className="flex justify-between items-baseline mt-4 relative z-10 w-full">
+                    <span className="text-3xl font-black text-slate-800">{clients.length}</span>
+                    <span className="text-[10px] text-blue-700 font-bold bg-blue-50 px-2 py-1 rounded-md uppercase tracking-wider">Cadastros</span>
                   </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-2xs space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Agendamento Hoje</span>
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-3xl font-black text-blue-650 text-blue-600">{numHojeAgendado}</span>
-                    <span className="text-xs text-blue-600 font-semibold bg-blue-50 px-1.5 py-0.5 rounded">A fazer</span>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col justify-between min-h-[120px]">
+                  <div className="absolute -top-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity text-slate-900 pointer-events-none">
+                    <Calendar size={100} />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Agendamentos Hoje</span>
+                  <div className="flex justify-between items-baseline mt-4 relative z-10 w-full">
+                    <span className="text-3xl font-black text-blue-600">{numHojeAgendado}</span>
+                    <span className="text-[10px] text-blue-700 font-bold bg-blue-50 px-2 py-1 rounded-md uppercase tracking-wider">A Fazer</span>
                   </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-2xs space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Alertas Estoque</span>
-                  <div className="flex justify-between items-baseline">
-                    <span className={`text-3xl font-black ${lowStockAlerts > 0 ? 'text-amber-600' : 'text-slate-400'}`}>
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group flex flex-col justify-between min-h-[120px]">
+                  <div className="absolute -top-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity text-slate-900 pointer-events-none">
+                    <Package size={100} />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Alertas de Estoque</span>
+                  <div className="flex justify-between items-baseline mt-4 relative z-10 w-full">
+                    <span className={`text-3xl font-black ${lowStockAlerts > 0 ? 'text-amber-600' : 'text-slate-800'}`}>
                       {lowStockAlerts}
                     </span>
-                    <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${lowStockAlerts > 0 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-500'}`}>
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider ${lowStockAlerts > 0 ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-600'}`}>
                       Reposição
                     </span>
                   </div>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-2xs space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Saldo Líquido</span>
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-2xl font-black text-green-600">R$ {totalEmCaixa.toFixed(2)}</span>
-                    <span className="text-xs text-green-600 font-semibold bg-green-50 px-1.5 py-0.5 rounded">Em caixa</span>
+                <div className="bg-slate-900 p-5 rounded-2xl shadow-md hover:shadow-lg transition-shadow relative overflow-hidden group flex flex-col justify-between min-h-[120px]">
+                  <div className="absolute -bottom-4 -right-2 opacity-10 group-hover:opacity-20 transition-opacity text-white pointer-events-none">
+                    <DollarSign size={100} />
+                  </div>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Liquidez / Caixa</span>
+                  <div className="flex justify-between items-baseline mt-4 relative z-10 w-full flex-wrap gap-2">
+                    <span className="text-2xl font-black text-white">R$ {totalEmCaixa.toFixed(2)}</span>
+                    <span className="text-[10px] text-emerald-400 font-bold bg-emerald-400/10 px-2 py-1 rounded-md border border-emerald-400/20 uppercase tracking-wider">Registrado</span>
                   </div>
                 </div>
 
@@ -496,20 +513,21 @@ export default function App() {
               <ServiceStats records={records} finance={finance} budgets={budgets} />
 
               {/* DYNAMIC ALERT: CLIENTES EM PERÍODO DE RETORNO (PRECISAM DE LIMPEZA!) */}
-              <div className="bg-white p-5 rounded-2xl border border-amber-200/80 shadow-xs space-y-4">
+              <div className="bg-white p-6 rounded-2xl border border-amber-200 shadow-sm space-y-5 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="p-2 bg-amber-50 rounded-xl text-amber-600">
-                      <UserCheck size={20} className="animate-bounce" />
+                  <div className="flex items-center gap-3">
+                    <span className="p-2.5 bg-amber-50 rounded-xl text-amber-600">
+                      <UserCheck size={22} className="animate-bounce" />
                     </span>
                     <div>
-                      <h2 className="font-extrabold text-slate-800 text-base">Controle de Retorno Preventivo ({recurrencePending.length})</h2>
-                      <p className="text-xs text-slate-400">Clientes que realizaram manutenção há mais de 3, 6 ou 12 meses e necessitam de nova higienização / limpeza</p>
+                      <h2 className="font-bold text-slate-800 text-base">Controle de Retorno Preventivo ({recurrencePending.length})</h2>
+                      <p className="text-xs text-slate-500 font-medium">Clientes que realizaram manutenção há mais de 3, 6 ou 12 meses e necessitam de nova higienização.</p>
                     </div>
                   </div>
 
-                  <span className="text-xs font-black text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md">
-                    Alerta Recorrência
+                  <span className="hidden sm:inline-block text-[10px] uppercase tracking-wider font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-md">
+                    Ação Recomendada
                   </span>
                 </div>
 
@@ -519,7 +537,7 @@ export default function App() {
                     return (
                       <div
                         key={client.id}
-                        className="p-4 bg-slate-50 border border-slate-200/60 rounded-xl space-y-3 flex flex-col justify-between"
+                        className="p-5 bg-white border border-slate-200 shadow-2xs hover:shadow-sm rounded-xl space-y-4 flex flex-col justify-between transition-all"
                       >
                         <div>
                           <div className="flex justify-between items-start">
