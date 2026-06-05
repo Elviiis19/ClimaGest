@@ -1,0 +1,6 @@
+{
+  "name": "Clima Gest",
+  "description": "Sistema completo para gestão de manutenção e ar condicionado, orçamentos, estoque, agendamento de retorno e controle financeiro.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
