@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { auth } from './firebase';
 import { 
-  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult,
   GoogleAuthProvider, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
@@ -19,21 +20,37 @@ export function LoginScreen() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
 
+  useEffect(() => {
+    const checkRedirect = async () => {
+      try {
+        setLoading(true);
+        const result = await getRedirectResult(auth);
+        if (result) {
+          // Success, user is logged in
+        }
+      } catch (e: any) {
+        console.error(e);
+        if (e.code === 'auth/account-exists-with-different-credential') {
+          setError('Já existe uma conta com este e-mail usando outro provedor de login.');
+        } else {
+          setError(e.message || 'Erro ao fazer login com o Google.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    checkRedirect();
+  }, []);
+
   const handleGoogleLogin = async () => {
     try {
       setLoading(true);
       setError(null);
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithRedirect(auth, provider);
     } catch (e: any) {
       console.error(e);
-      if (e.code === 'auth/popup-blocked') {
-        setError('O navegador bloqueou a janela de login do Google. Por favor, permita pop-ups ou crie uma conta com e-mail e senha abaixo.');
-      } else if (e.code === 'auth/account-exists-with-different-credential') {
-        setError('Já existe uma conta com este e-mail usando outro provedor de login.');
-      } else {
-        setError(e.message || 'Erro ao fazer login com o Google.');
-      }
+      setError(e.message || 'Erro ao redirecionar para o Google.');
       setLoading(false);
     }
   };
