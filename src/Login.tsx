@@ -1,25 +1,68 @@
 import React, { useState } from 'react';
 import { auth } from './firebase';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { ShieldCheck, Calendar, Users, FileText, ArrowRight, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  FacebookAuthProvider, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword 
+} from 'firebase/auth';
+import { ShieldCheck, Calendar, Users, FileText, ArrowRight, CheckCircle2, AlertTriangle, Mail, Lock } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
 
-  const handleGoogleLogin = async () => {
+  const handleProviderLogin = async (providerName: 'google' | 'facebook') => {
     try {
       setLoading(true);
       setError(null);
-      const provider = new GoogleAuthProvider();
+      const provider = providerName === 'google' ? new GoogleAuthProvider() : new FacebookAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (e: any) {
       console.error(e);
       if (e.code === 'auth/popup-blocked') {
-        setError('O navegador bloqueou a janela de login. Por favor, permita pop-ups na barra de endereços ou abra o app em uma nova guia externa.');
+        setError(`O navegador bloqueou a janela de login do ${providerName === 'google' ? 'Google' : 'Facebook'}. Por favor, permita pop-ups ou crie uma conta com e-mail e senha abaixo.`);
+      } else if (e.code === 'auth/account-exists-with-different-credential') {
+        setError('Já existe uma conta com este e-mail usando outro provedor de login.');
       } else {
-        setError(e.message || 'Erro ao fazer login com o Google.');
+        setError(e.message || `Erro ao fazer login com o ${providerName === 'google' ? 'Google' : 'Facebook'}.`);
+      }
+      setLoading(false);
+    }
+  };
+
+  const handleEmailAuth = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) {
+      setError('Preencha o e-mail e a senha.');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      setError(null);
+      if (mode === 'login') {
+        await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        await createUserWithEmailAndPassword(auth, email, password);
+      }
+    } catch (e: any) {
+      console.error(e);
+      if (e.code === 'auth/invalid-credential' || e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password') {
+        setError('E-mail ou senha incorretos.');
+      } else if (e.code === 'auth/email-already-in-use') {
+        setError('Este e-mail já está cadastrado.');
+      } else if (e.code === 'auth/weak-password') {
+        setError('A senha deve ter pelo menos 6 caracteres.');
+      } else {
+        setError('Erro de autenticação. Tente novamente.');
       }
       setLoading(false);
     }
@@ -85,7 +128,7 @@ export function LoginScreen() {
             <h2 className="text-2xl font-black text-slate-800 tracking-tight flex items-center justify-center gap-1.5 mb-2">
               Clima Gest <span className="text-xs bg-blue-50 text-blue-600 font-extrabold px-1.5 py-0.5 rounded uppercase">PRO</span>
             </h2>
-            <p className="text-sm text-slate-500 font-medium">Faça login para acessar o painel empresarial</p>
+            <p className="text-sm text-slate-500 font-medium">{mode === 'login' ? 'Faça login para acessar o painel' : 'Crie sua conta gratuitamente'}</p>
           </div>
 
           {error && (
@@ -95,43 +138,120 @@ export function LoginScreen() {
             </div>
           )}
 
-          <div className="space-y-6">
-            <button
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full relative bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-bold py-3.5 rounded-xl flex items-center justify-center gap-3 transition-all outline-none focus:ring-4 focus:ring-slate-100 disabled:opacity-50"
-            >
-              <svg width="20" height="20" viewBox="0 0 48 48">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-              </svg>
-              <span>{loading ? 'Acessando...' : 'Entrar com Google'}</span>
-            </button>
+          <div className="space-y-4">
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => handleProviderLogin('google')}
+                disabled={loading}
+                className="flex-1 relative bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all outline-none focus:ring-4 focus:ring-slate-100 disabled:opacity-50"
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                </svg>
+                <span className="text-sm">Google</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleProviderLogin('facebook')}
+                disabled={loading}
+                className="flex-1 relative bg-[#1877F2] hover:bg-[#166FE5] text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all outline-none focus:ring-4 focus:ring-blue-100 disabled:opacity-50"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+                <span className="text-sm">Facebook</span>
+              </button>
+            </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 py-2">
               <div className="h-px bg-slate-200 flex-1"></div>
-              <span className="text-xs text-slate-400 font-semibold uppercase">ou</span>
+              <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">ou e-mail</span>
               <div className="h-px bg-slate-200 flex-1"></div>
             </div>
 
-            <p className="text-xs text-center text-slate-500 leading-relaxed font-medium">
-              Primeiro acesso? Um <strong className="text-slate-700">teste de 7 dias grátis</strong> será ativado automaticamente. Após, você poderá escolher um plano (Mensal, Trimestral, Semestral ou Anual).
-            </p>
+            <form onSubmit={handleEmailAuth} className="space-y-4">
+              {mode === 'register' && (
+                <div>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                      <Users size={18} />
+                    </div>
+                    <input
+                      type="text"
+                      className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-slate-800 transition-colors"
+                      placeholder="Seu nome completo"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Mail size={18} />
+                  </div>
+                  <input
+                    type="email"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-slate-800 transition-colors"
+                    placeholder="Seu e-mail"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Lock size={18} />
+                  </div>
+                  <input
+                    type="password"
+                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-slate-800 transition-colors"
+                    placeholder={mode === 'login' ? "Sua senha" : "Crie uma senha forte"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all outline-none focus:ring-4 focus:ring-blue-100 disabled:opacity-50"
+              >
+                <span>{loading ? 'Aguarde...' : (mode === 'login' ? 'Entrar no Painel' : 'Criar Conta Grátis')}</span>
+              </button>
+            </form>
+
+            <div className="text-center mt-6">
+              <button 
+                type="button" 
+                onClick={() => {
+                  setMode(mode === 'login' ? 'register' : 'login');
+                  setError(null);
+                }}
+                className="text-sm font-semibold text-slate-600 hover:text-blue-600"
+              >
+                {mode === 'login' ? 'Não tem uma conta? Cadastre-se' : 'Já tem uma conta? Fazer Login'}
+              </button>
+            </div>
+            
+            {mode === 'register' && (
+              <p className="text-[10px] text-center text-slate-400 leading-relaxed font-medium mt-4">
+                Ao criar sua conta, você recebe um <strong className="text-slate-600">teste de 7 dias grátis</strong>.<br/>
+                Após, escolha um plano (Mensal, Trimestral, Semestral ou Anual).
+              </p>
+            )}
           </div>
         </motion.div>
-
-        {/* Pricing Mini-Teaser */}
-        <div className="mt-12 text-center">
-          <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mb-4">Escolha seu plano após o teste</p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <span className="bg-white px-4 py-2 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 opacity-70">Mensal<br/>R$ 49,90</span>
-            <span className="bg-gradient-to-b from-blue-50 to-blue-100 flex items-center justify-center border border-blue-200 px-4 py-2 rounded-lg text-xs font-black text-blue-700 relative overflow-hidden shadow-sm">
-               Anual (Best)<br/>R$ 479,00
-            </span>
-          </div>
-        </div>
       </div>
       
     </div>

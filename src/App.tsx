@@ -14,6 +14,7 @@ import {
 import { auth } from './firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
 import { LoginScreen } from './Login';
+import { OnboardingScreen } from './Onboarding';
 import { LogOut } from 'lucide-react';
 // Import Modular Components
 import { ClientManager } from './components/ClientManager';
@@ -59,11 +60,20 @@ const LOCAL_STORAGE_KEYS = {
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [profileSetup, setProfileSetup] = useState<{name: string, company: string, done: boolean} | null>(null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setAuthReady(true);
+      if (currentUser) {
+        const storedProfile = localStorage.getItem(`profile_${currentUser.uid}`);
+        if (storedProfile) {
+          setProfileSetup(JSON.parse(storedProfile));
+        } else {
+          setProfileSetup({ name: currentUser.displayName || '', company: '', done: false });
+        }
+      }
     });
     return () => unsub();
   }, []);
@@ -91,13 +101,13 @@ export default function App() {
       }
     };
 
-    setClients(loadState(LOCAL_STORAGE_KEYS.CLIENTS, INITIAL_CLIENTS));
-    setEquipments(loadState(LOCAL_STORAGE_KEYS.EQUIPMENT, INITIAL_EQUIPMENT));
-    setRecords(loadState(LOCAL_STORAGE_KEYS.RECORDS, INITIAL_RECORDS));
-    setBudgets(loadState(LOCAL_STORAGE_KEYS.BUDGETS, INITIAL_BUDGETS));
-    setSchedulings(loadState(LOCAL_STORAGE_KEYS.SCHEDULINGS, INITIAL_SCHEDULINGS));
-    setStock(loadState(LOCAL_STORAGE_KEYS.STOCK, INITIAL_STOCK));
-    setFinance(loadState(LOCAL_STORAGE_KEYS.FINANCE, INITIAL_FINANCEDATA));
+    setClients(loadState(LOCAL_STORAGE_KEYS.CLIENTS, []));
+    setEquipments(loadState(LOCAL_STORAGE_KEYS.EQUIPMENT, []));
+    setRecords(loadState(LOCAL_STORAGE_KEYS.RECORDS, []));
+    setBudgets(loadState(LOCAL_STORAGE_KEYS.BUDGETS, []));
+    setSchedulings(loadState(LOCAL_STORAGE_KEYS.SCHEDULINGS, []));
+    setStock(loadState(LOCAL_STORAGE_KEYS.STOCK, []));
+    setFinance(loadState(LOCAL_STORAGE_KEYS.FINANCE, []));
   }, [user]);
 
   // Save to LocalStorage helpers
@@ -374,6 +384,10 @@ export default function App() {
     return <LoginScreen />;
   }
 
+  if (profileSetup && !profileSetup.done) {
+    return <OnboardingScreen user={user} onComplete={setProfileSetup} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans pb-24 md:pb-6" id="applet-viewport">
       {/* HEADER NAVBAR */}
@@ -459,8 +473,8 @@ export default function App() {
               Sincronizado
             </span>
             <div className="hidden lg:flex flex-col justify-center items-end ml-2 mr-1">
-              <span className="text-[9px] font-bold text-slate-400 uppercase leading-tight">Pro Plan</span>
-              <span className="text-[11px] font-bold text-slate-700 leading-tight">{user.email}</span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase leading-tight">{profileSetup?.company || 'Pro Plan'}</span>
+              <span className="text-[11px] font-bold text-slate-700 leading-tight">{profileSetup?.name || user.email}</span>
             </div>
             <button onClick={() => signOut(auth)} className="text-slate-400 hover:text-rose-500 bg-slate-50 hover:bg-rose-50 p-2 rounded-full transition-colors cursor-pointer" title="Sair do sistema">
               <LogOut size={16} />
