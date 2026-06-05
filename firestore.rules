@@ -114,63 +114,63 @@ service cloud.firestore {
 
     match /admins/{adminId} {
       allow read: if isAdmin();
-      allow create: if isMaster() && isValidId(adminId) && isValidAdminProfile(incoming()) && incoming().createdAt == request.time;
-      allow update: if isMaster() && isValidId(adminId) && isValidAdminProfile(incoming()) && incoming().createdAt == existing().createdAt;
+      allow create: if isMaster() && isValidId(adminId) && isValidAdminProfile(incoming());
+      allow update: if isMaster() && isValidId(adminId) && isValidAdminProfile(incoming());
       allow delete: if isMaster();
     }
 
     match /users/{userId} {
       allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
-      allow create: if (isSignedIn() && request.auth.uid == userId) && isValidId(userId) && isValidUserProfile(incoming()) && incoming().createdAt == request.time;
-      allow update: if (isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUserProfile(incoming()) && incoming().createdAt == existing().createdAt) || (isAdmin() && isValidId(userId) && isValidUserProfile(incoming()) && incoming().createdAt == existing().createdAt);
+      allow create: if (isSignedIn() && request.auth.uid == userId) && isValidId(userId) && isValidUserProfile(incoming());
+      allow update: if (isSignedIn() && request.auth.uid == userId && isValidId(userId) && isValidUserProfile(incoming())) || (isAdmin() && isValidId(userId) && isValidUserProfile(incoming()));
       allow delete: if isAdmin();
 
       match /clients/{clientId} {
         allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
-        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(clientId) && isValidClient(incoming()) && incoming().createdAt == request.time;
-        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(clientId) && isValidClient(incoming()) && incoming().createdAt == existing().createdAt && incoming().userId == existing().userId;
+        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(clientId) && isValidClient(incoming());
+        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(clientId) && isValidClient(incoming()) && incoming().userId == existing().userId;
         allow delete: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
       }
 
       match /equipments/{equipmentId} {
         allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
-        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(equipmentId) && isValidEquipment(incoming()) && incoming().createdAt == request.time;
-        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(equipmentId) && isValidEquipment(incoming()) && incoming().createdAt == existing().createdAt && incoming().userId == existing().userId;
+        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(equipmentId) && isValidEquipment(incoming());
+        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(equipmentId) && isValidEquipment(incoming()) && incoming().userId == existing().userId;
         allow delete: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
       }
 
       match /records/{recordId} {
         allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
-        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(recordId) && isValidMaintenanceRecord(incoming()) && incoming().createdAt == request.time;
-        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(recordId) && isValidMaintenanceRecord(incoming()) && incoming().createdAt == existing().createdAt && incoming().userId == existing().userId;
+        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(recordId) && isValidMaintenanceRecord(incoming());
+        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(recordId) && isValidMaintenanceRecord(incoming()) && incoming().userId == existing().userId;
         allow delete: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
       }
 
       match /transactions/{transactionId} {
         allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
-        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(transactionId) && isValidFinancialTransaction(incoming()) && incoming().createdAt == request.time;
-        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(transactionId) && isValidFinancialTransaction(incoming()) && incoming().createdAt == existing().createdAt && incoming().userId == existing().userId;
+        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(transactionId) && isValidFinancialTransaction(incoming());
+        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(transactionId) && isValidFinancialTransaction(incoming()) && incoming().userId == existing().userId;
         allow delete: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
       }
 
       match /schedulings/{schedulingId} {
         allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
-        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(schedulingId) && isValidScheduling(incoming()) && incoming().createdAt == request.time;
-        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(schedulingId) && isValidScheduling(incoming()) && incoming().createdAt == existing().createdAt && incoming().userId == existing().userId;
+        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(schedulingId) && isValidScheduling(incoming());
+        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(schedulingId) && isValidScheduling(incoming()) && incoming().userId == existing().userId;
         allow delete: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
       }
 
       match /budgets/{budgetId} {
         allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
-        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(budgetId) && isValidBudget(incoming()) && incoming().createdAt == request.time;
-        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(budgetId) && isValidBudget(incoming()) && incoming().createdAt == existing().createdAt && incoming().userId == existing().userId;
+        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(budgetId) && isValidBudget(incoming());
+        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(budgetId) && isValidBudget(incoming()) && incoming().userId == existing().userId;
         allow delete: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
       }
 
       match /stock/{stockItemId} {
         allow read: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
-        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(stockItemId) && isValidStockItem(incoming()) && incoming().createdAt == request.time;
-        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(stockItemId) && isValidStockItem(incoming()) && incoming().createdAt == existing().createdAt && incoming().userId == existing().userId;
+        allow create: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(stockItemId) && isValidStockItem(incoming());
+        allow update: if (isSignedIn() && request.auth.uid == userId || isAdmin()) && isValidId(stockItemId) && isValidStockItem(incoming()) && incoming().userId == existing().userId;
         allow delete: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
       }
     }

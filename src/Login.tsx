@@ -117,7 +117,7 @@ export function LoginScreen() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 px-4 overflow-hidden">
+      <section className="relative pt-28 pb-12 md:pt-36 md:pb-16 px-4 overflow-hidden">
         {/* Background Texture/Image */}
         <div className="absolute inset-0 z-0">
           <img src="https://images.unsplash.com/photo-1581092918056-0c4c3cb37151?auto=format&fit=crop&q=80" alt="background" className="w-full h-full object-cover opacity-[0.03]" />
