@@ -16,7 +16,11 @@ export function LoginScreen() {
       await signInWithPopup(auth, provider);
     } catch (e: any) {
       console.error(e);
-      setError(e.message || 'Erro ao fazer login com o Google.');
+      if (e.code === 'auth/popup-blocked') {
+        setError('O navegador bloqueou a janela de login. Por favor, permita pop-ups na barra de endereços ou abra o app em uma nova guia externa.');
+      } else {
+        setError(e.message || 'Erro ao fazer login com o Google.');
+      }
       setLoading(false);
     }
   };
