@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Client, Equipment, MaintenanceRecord, Budget, Scheduling, StockItem, FinancialTransaction, UserProfile, AdminProfile } from './types';
 import {
@@ -95,20 +96,44 @@ export default function App() {
             }
             setProfileSetup({ ...data, trialEnd: trialExtended, done: true });
           } else {
-            setProfileSetup({ 
-               email: currentUser.email || '', 
-               name: currentUser.displayName || '', 
-               company: '', 
-               subscriptionPlan: 'free', 
-               subscriptionStatus: 'trial', 
-               createdAt: new Date().toISOString(), 
-               done: false 
-            });
+             if (currentUser.email === MASTER_EMAIL) {
+               setProfileSetup({ 
+                 email: currentUser.email || '', 
+                 name: currentUser.displayName || 'Admin Master', 
+                 company: 'Clima Gest', 
+                 subscriptionPlan: 'anual', 
+                 subscriptionStatus: 'active', 
+                 createdAt: new Date().toISOString(), 
+                 done: true 
+               });
+             } else {
+               setProfileSetup({ 
+                  email: currentUser.email || '', 
+                  name: currentUser.displayName || '', 
+                  company: '', 
+                  subscriptionPlan: 'free', 
+                  subscriptionStatus: 'trial', 
+                  createdAt: new Date().toISOString(), 
+                  done: false 
+               });
+             }
           }
         } catch(e) {
            console.error("Error fetching user", e);
            // Fallback to minimal state mostly to allow onboarding if failed
-           setProfileSetup({ email: currentUser.email || '', name: currentUser.displayName || '', company: '', subscriptionPlan: 'free', subscriptionStatus: 'trial', createdAt: new Date().toISOString(), done: false });
+           if (currentUser.email === MASTER_EMAIL) {
+               setProfileSetup({ 
+                 email: currentUser.email || '', 
+                 name: currentUser.displayName || 'Admin Master', 
+                 company: 'Clima Gest', 
+                 subscriptionPlan: 'anual', 
+                 subscriptionStatus: 'active', 
+                 createdAt: new Date().toISOString(), 
+                 done: true 
+               });             
+           } else {
+               setProfileSetup({ email: currentUser.email || '', name: currentUser.displayName || '', company: '', subscriptionPlan: 'free', subscriptionStatus: 'trial', createdAt: new Date().toISOString(), done: false });
+           }
         }
       } else {
          setProfileSetup(null);
@@ -120,6 +145,12 @@ export default function App() {
   }, []);
 
   const [activeTab, setActiveTab] = useState<'painel' | 'clientes' | 'agenda' | 'financeiro' | 'orcamentos' | 'estoque' | 'admin'>('painel');
+
+  useEffect(() => {
+    if (isAdmin && user?.email === MASTER_EMAIL) {
+      setActiveTab('admin');
+    }
+  }, [isAdmin, user]);
 
   // Core Sate managers
   const [clients, setClients] = useState<Client[]>([]);
@@ -421,13 +452,10 @@ export default function App() {
     return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400 font-medium">Carregando plataforma...</div>;
   }
 
-  if (!user) {
-    return <LoginScreen />;
-  }
-
-  if (profileSetup && !profileSetup.done) {
-    return <OnboardingScreen user={user} onComplete={setProfileSetup} />;
-  }
+  const renderDashboard = () => {
+    if (profileSetup && !profileSetup.done) {
+      return <OnboardingScreen user={user!} onComplete={setProfileSetup} />;
+    }
 
   let remainingDays = 0;
   let alertLevel = null; // 'red', 'orange', 'yellow', 'none'
@@ -1079,5 +1107,14 @@ export default function App() {
         )}
       </nav>
     </div>
+  );
+  };
+
+  return (
+    <Routes>
+      <Route path="/" element={<LoginScreen user={user} />} />
+      <Route path="/painel/*" element={!user ? <Navigate to="/" replace /> : renderDashboard()} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

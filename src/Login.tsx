@@ -6,12 +6,14 @@ import {
   GoogleAuthProvider, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
-  updateProfile
+  updateProfile,
+  User
 } from 'firebase/auth';
 import { ShieldCheck, Calendar, Users, FileText, ArrowRight, CheckCircle2, AlertTriangle, Mail, Lock } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 
-export function LoginScreen() {
+export function LoginScreen({ user }: { user?: User | null }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -20,13 +22,15 @@ export function LoginScreen() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const checkRedirect = async () => {
       try {
         setLoading(true);
         const result = await getRedirectResult(auth);
         if (result) {
-          // Success, user is logged in
+          navigate('/painel');
         }
       } catch (e: any) {
         console.error(e);
@@ -68,10 +72,12 @@ export function LoginScreen() {
       if (mode === 'login') {
         try {
           await signInWithEmailAndPassword(auth, email, password);
+          navigate('/painel');
         } catch (innerErr: any) {
           if (email === 'neridiasdecarvalho@gmail.com' && (innerErr.code === 'auth/user-not-found' || innerErr.code === 'auth/invalid-credential' || innerErr.code === 'auth/wrong-password')) {
              const userCred = await createUserWithEmailAndPassword(auth, email, password);
              await updateProfile(userCred.user, { displayName: 'Master Admin' });
+             navigate('/painel');
              return;
           }
           throw innerErr;
@@ -79,6 +85,7 @@ export function LoginScreen() {
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(userCredential.user, { displayName: name });
+        navigate('/painel');
       }
     } catch (e: any) {
       console.error(e);
@@ -116,8 +123,15 @@ export function LoginScreen() {
           </nav>
           <div>
             <button 
-              onClick={() => { setMode('login'); setShowAuthModal(true); }}
-              className="text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-5 rounded-xl transition-all shadow-sm"
+              onClick={() => {
+                if (user) {
+                  navigate('/painel');
+                } else {
+                  setMode('login');
+                  setShowAuthModal(true);
+                }
+              }}
+              className="text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 py-2.5 px-5 rounded-xl transition-all shadow-sm cursor-pointer"
             >
               Entrar no Painel
             </button>
@@ -126,7 +140,7 @@ export function LoginScreen() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-28 pb-12 md:pt-36 md:pb-16 px-4 overflow-hidden">
+      <section className="relative pt-24 pb-8 md:pt-28 md:pb-12 px-4 overflow-hidden">
         {/* Background Texture/Image */}
         <div className="absolute inset-0 z-0">
           <img src="https://images.unsplash.com/photo-1581092918056-0c4c3cb37151?auto=format&fit=crop&q=80" alt="background" className="w-full h-full object-cover opacity-[0.03]" />
@@ -173,8 +187,15 @@ export function LoginScreen() {
 
             <div className="mt-4">
               <button 
-                onClick={() => { setMode('register'); setShowAuthModal(true); }}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-black text-lg py-4 px-8 rounded-2xl shadow-lg hover:shadow-blue-500/25 transition-all outline-none focus:ring-4 focus:ring-blue-100 w-full sm:w-auto"
+                onClick={() => {
+                  if (user) {
+                    navigate('/painel');
+                  } else {
+                    setMode('register');
+                    setShowAuthModal(true);
+                  }
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-black text-lg py-4 px-8 rounded-2xl shadow-lg hover:shadow-blue-500/25 transition-all outline-none focus:ring-4 focus:ring-blue-100 w-full sm:w-auto cursor-pointer"
               >
                 COMEÇAR AGORA - GRÁTIS
               </button>
