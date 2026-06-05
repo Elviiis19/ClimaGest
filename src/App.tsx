@@ -401,7 +401,19 @@ export default function App() {
 
   let remainingDays = 0;
   let alertLevel = null; // 'red', 'orange', 'yellow', 'none'
-  if (profileSetup?.trialEnd) {
+  if (profileSetup) {
+    if (!profileSetup.trialEnd) {
+       // Support old users by granting them 7 days from now
+       const newEnd = new Date();
+       newEnd.setDate(newEnd.getDate() + 7);
+       profileSetup.trialEnd = newEnd.toISOString();
+       profileSetup.plan = 'trial';
+       profileSetup.extendedTrial = true;
+       if (user) {
+         localStorage.setItem(`profile_${user.uid}`, JSON.stringify(profileSetup));
+       }
+    }
+    
     const end = new Date(profileSetup.trialEnd);
     const today = new Date();
     const diffTime = end.getTime() - today.getTime();
