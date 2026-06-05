@@ -11,6 +11,10 @@ import {
   INITIAL_FINANCEDATA
 } from './data';
 
+import { auth } from './firebase';
+import { onAuthStateChanged, User, signOut } from 'firebase/auth';
+import { LoginScreen } from './Login';
+import { LogOut } from 'lucide-react';
 // Import Modular Components
 import { ClientManager } from './components/ClientManager';
 import { BudgetManager } from './components/BudgetManager';
@@ -53,6 +57,17 @@ const LOCAL_STORAGE_KEYS = {
 };
 
 export default function App() {
+  const [user, setUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthReady(true);
+    });
+    return () => unsub();
+  }, []);
+
   const [activeTab, setActiveTab] = useState<'painel' | 'clientes' | 'agenda' | 'financeiro' | 'orcamentos' | 'estoque'>('painel');
 
   // Core Sate managers
@@ -66,9 +81,10 @@ export default function App() {
 
   // Load from LocalStorage or backup defaults
   useEffect(() => {
+    if (!user) return; // Only load when user is present
     const loadState = <T,>(key: string, backup: T): T => {
       try {
-        const stored = localStorage.getItem(key);
+        const stored = localStorage.getItem(`${key}_${user.uid}`);
         return stored ? JSON.parse(stored) : backup;
       } catch (e) {
         return backup;
@@ -82,11 +98,13 @@ export default function App() {
     setSchedulings(loadState(LOCAL_STORAGE_KEYS.SCHEDULINGS, INITIAL_SCHEDULINGS));
     setStock(loadState(LOCAL_STORAGE_KEYS.STOCK, INITIAL_STOCK));
     setFinance(loadState(LOCAL_STORAGE_KEYS.FINANCE, INITIAL_FINANCEDATA));
-  }, []);
+  }, [user]);
 
   // Save to LocalStorage helpers
   const saveState = (key: string, data: any) => {
-    localStorage.setItem(key, JSON.stringify(data));
+    if (user) {
+      localStorage.setItem(`${key}_${user.uid}`, JSON.stringify(data));
+    }
   };
 
   // CLIENT CRUD
@@ -348,6 +366,14 @@ export default function App() {
   const numHojeAgendado = schedulings.filter(s => s.date === '2026-05-14' && s.status === 'Agendado').length;
   const lowStockAlerts = stock.filter(item => item.quantity <= item.minQuantity).length;
 
+  if (!authReady) {
+    return <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-400 font-medium">Carregando plataforma...</div>;
+  }
+
+  if (!user) {
+    return <LoginScreen />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans pb-24 md:pb-6" id="applet-viewport">
       {/* HEADER NAVBAR */}
@@ -432,6 +458,13 @@ export default function App() {
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping" />
               Sincronizado
             </span>
+            <div className="hidden lg:flex flex-col justify-center items-end ml-2 mr-1">
+              <span className="text-[9px] font-bold text-slate-400 uppercase leading-tight">Pro Plan</span>
+              <span className="text-[11px] font-bold text-slate-700 leading-tight">{user.email}</span>
+            </div>
+            <button onClick={() => signOut(auth)} className="text-slate-400 hover:text-rose-500 bg-slate-50 hover:bg-rose-50 p-2 rounded-full transition-colors cursor-pointer" title="Sair do sistema">
+              <LogOut size={16} />
+            </button>
           </div>
 
         </div>
