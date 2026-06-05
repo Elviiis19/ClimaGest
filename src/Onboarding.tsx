@@ -1,33 +1,61 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { User } from 'firebase/auth';
-import { Building2, User as UserIcon, CheckCircle2 } from 'lucide-react';
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from './firebase';
+import { Building2, User as UserIcon, CheckCircle2, Loader2 } from 'lucide-react';
+import { UserProfile } from './types';
 
 export function OnboardingScreen({ 
   user, 
   onComplete 
 }: { 
   user: User, 
-  onComplete: (data: { name: string, company: string, done: boolean, trialEnd?: string, plan?: string }) => void 
+  onComplete: (data: UserProfile & { done: boolean }) => void 
 }) {
   const [name, setName] = useState(user.displayName || '');
   const [company, setCompany] = useState('');
+  const [loading, setLoading] = useState(false);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !company) return;
     
+    setLoading(true);
     const end = new Date();
     end.setDate(end.getDate() + 7);
-    const profileData = { 
-      name, 
-      company, 
-      done: true,
-      trialEnd: end.toISOString(),
-      plan: 'trial' // Initial plan is trial
+
+    const profileData: UserProfile = { 
+       id: user.uid,
+       email: user.email || '',
+       name, 
+       company, 
+       subscriptionStatus: 'trial',
+       subscriptionPlan: 'free',
+       trialEnd: end.toISOString(),
+       createdAt: new Date().toISOString()
     };
-    localStorage.setItem(`profile_${user.uid}`, JSON.stringify(profileData));
-    onComplete(profileData);
+
+    try {
+      // Regra exige plan=="free" e certas chaves exatas na criaçao para simplificar. 
+      // Mas nas regras modifiquei para suportar fields atuais
+      const userRef = doc(db, 'users', user.uid);
+      await setDoc(userRef, {
+        email: profileData.email,
+        name: profileData.name,
+        company: profileData.company,
+        subscriptionPlan: profileData.subscriptionPlan,
+        subscriptionStatus: profileData.subscriptionStatus,
+        trialEnd: profileData.trialEnd,
+        createdAt: new Date().toISOString() // Let's pass the string explicitly because we didn't use Timestamp 
+      });
+      onComplete({ ...profileData, done: true });
+    } catch(err: any) {
+      console.error(err);
+      window.alert("Erro ao salvar perfil: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -85,9 +113,10 @@ export function OnboardingScreen({
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all outline-none focus:ring-4 focus:ring-blue-100 mt-4"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 transition-all outline-none focus:ring-4 focus:ring-blue-100 mt-4 disabled:opacity-50"
           >
-            Configurar Sistema Estúdio
+            {loading ? <Loader2 className="animate-spin" size={20} /> : "Configurar Sistema Estúdio"}
           </button>
         </form>
       </motion.div>

@@ -73,6 +73,24 @@ export interface StockItem {
   priceSell: number;
 }
 
+export interface UserProfile {
+  id: string; // The user's uid in Firebase Auth
+  email: string;
+  name: string;
+  company?: string;
+  subscriptionPlan: 'free' | 'trial' | 'mensal' | 'trimestral' | 'semestral' | 'anual';
+  subscriptionStatus: 'active' | 'inactive' | 'trial' | 'blocked';
+  trialEnd?: string;
+  createdAt: string;
+}
+
+export interface AdminProfile {
+  id: string;
+  email: string;
+  level: 'master' | 'full' | 'viewer';
+  createdAt: string;
+}
+
 export interface FinancialTransaction {
   id: string;
   type: 'receita' | 'despesa';

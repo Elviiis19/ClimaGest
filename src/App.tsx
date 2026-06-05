@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Client, Equipment, MaintenanceRecord, Budget, Scheduling, StockItem, FinancialTransaction } from './types';
+import { Client, Equipment, MaintenanceRecord, Budget, Scheduling, StockItem, FinancialTransaction, UserProfile, AdminProfile } from './types';
 import {
   INITIAL_CLIENTS,
   INITIAL_EQUIPMENT,
@@ -11,8 +11,9 @@ import {
   INITIAL_FINANCEDATA
 } from './data';
 
-import { auth } from './firebase';
+import { auth, db } from './firebase';
 import { onAuthStateChanged, User, signOut } from 'firebase/auth';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { LoginScreen } from './Login';
 import { OnboardingScreen } from './Onboarding';
 import { LogOut } from 'lucide-react';
@@ -25,6 +26,7 @@ import { AgendaManager } from './components/AgendaManager';
 import { BtuCalculator } from './components/BtuCalculator';
 import { HvacDiagnostic } from './components/HvacDiagnostic';
 import { ServiceStats } from './components/ServiceStats';
+import { AdminPanel } from './components/AdminPanel';
 
 // Import Icons
 import {
@@ -57,39 +59,67 @@ const LOCAL_STORAGE_KEYS = {
   FINANCE: 'climagest_finance_v1'
 };
 
+const MASTER_EMAIL = 'neridiasdecarvalho@gmail.com';
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [profileSetup, setProfileSetup] = useState<{name: string, company: string, done: boolean, trialEnd?: string, plan?: string} | null>(null);
+  const [profileSetup, setProfileSetup] = useState<UserProfile & { done: boolean } | null>(null);
   const [showPlans, setShowPlans] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (currentUser) => {
+    const unsub = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-      setAuthReady(true);
       if (currentUser) {
-        const storedProfile = localStorage.getItem(`profile_${currentUser.uid}`);
-        if (storedProfile) {
-          let parsedProfile = JSON.parse(storedProfile);
-          if (parsedProfile.plan === 'trial' && !parsedProfile.extendedTrial) {
-            if (parsedProfile.trialEnd) {
-              const prevEnd = new Date(parsedProfile.trialEnd);
-              prevEnd.setDate(prevEnd.getDate() + 4);
-              parsedProfile.trialEnd = prevEnd.toISOString();
-            }
-            parsedProfile.extendedTrial = true;
-            localStorage.setItem(`profile_${currentUser.uid}`, JSON.stringify(parsedProfile));
-          }
-          setProfileSetup(parsedProfile);
+        if (currentUser.email === MASTER_EMAIL) {
+          setIsAdmin(true);
         } else {
-          setProfileSetup({ name: currentUser.displayName || '', company: '', done: false });
+          try {
+            const adminDoc = await getDoc(doc(db, 'admins', currentUser.uid));
+            if (adminDoc.exists()) setIsAdmin(true);
+          } catch(e) {}
         }
+
+        try {
+          const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+          if (userDoc.exists()) {
+            const data = userDoc.data() as UserProfile;
+             // Grant extended trial conceptually
+            let trialExtended = data.trialEnd;
+            if (data.subscriptionPlan === 'trial' && !data.trialEnd) {
+               const prevEnd = new Date();
+               prevEnd.setDate(prevEnd.getDate() + 7);
+               trialExtended = prevEnd.toISOString();
+               await updateDoc(doc(db, 'users', currentUser.uid), { trialEnd: trialExtended });
+            }
+            setProfileSetup({ ...data, trialEnd: trialExtended, done: true });
+          } else {
+            setProfileSetup({ 
+               email: currentUser.email || '', 
+               name: currentUser.displayName || '', 
+               company: '', 
+               subscriptionPlan: 'free', 
+               subscriptionStatus: 'trial', 
+               createdAt: new Date().toISOString(), 
+               done: false 
+            });
+          }
+        } catch(e) {
+           console.error("Error fetching user", e);
+           // Fallback to minimal state mostly to allow onboarding if failed
+           setProfileSetup({ email: currentUser.email || '', name: currentUser.displayName || '', company: '', subscriptionPlan: 'free', subscriptionStatus: 'trial', createdAt: new Date().toISOString(), done: false });
+        }
+      } else {
+         setProfileSetup(null);
+         setIsAdmin(false);
       }
+      setAuthReady(true);
     });
     return () => unsub();
   }, []);
 
-  const [activeTab, setActiveTab] = useState<'painel' | 'clientes' | 'agenda' | 'financeiro' | 'orcamentos' | 'estoque'>('painel');
+  const [activeTab, setActiveTab] = useState<'painel' | 'clientes' | 'agenda' | 'financeiro' | 'orcamentos' | 'estoque' | 'admin'>('painel');
 
   // Core Sate managers
   const [clients, setClients] = useState<Client[]>([]);
@@ -420,11 +450,13 @@ export default function App() {
     remainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
-  if (remainingDays <= 0 || showPlans) {
+  let isBlocked = profileSetup?.subscriptionStatus === 'blocked';
+
+  if (isBlocked || remainingDays <= 0 || showPlans) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative z-50">
         <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-slate-200 shadow-xl text-center relative">
-          {showPlans && remainingDays > 0 && (
+          {showPlans && remainingDays > 0 && !isBlocked && (
             <button 
               onClick={() => setShowPlans(false)} 
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center font-bold cursor-pointer"
@@ -433,24 +465,27 @@ export default function App() {
             </button>
           )}
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 text-blue-600 mb-4">
-            <AlertTriangle size={32} className={remainingDays <= 0 ? "text-red-500" : "text-blue-500"} />
+            <AlertTriangle size={32} className={isBlocked || remainingDays <= 0 ? "text-red-500" : "text-blue-500"} />
           </div>
           <h1 className="text-2xl font-black text-slate-800 tracking-tight mb-2">
-            {remainingDays <= 0 ? 'Sua Assinatura Expirou' : 'Escolha seu Plano'}
+            {isBlocked ? 'Acesso Bloqueado' : remainingDays <= 0 ? 'Sua Assinatura Expirou' : 'Escolha seu Plano'}
           </h1>
           <p className="text-slate-500 font-medium text-sm leading-relaxed mb-6">
-            {remainingDays <= 0 
-              ? 'O seu período de acesso ao Clima Gest PRO chegou ao fim. Renove ou escolha um plano.' 
-              : 'Faça um upgrade na sua conta para estender seu acesso ao sistema.'}
+            {isBlocked 
+              ? 'O acesso da sua conta foi suspenso. Entre em contato com o suporte.'
+              : remainingDays <= 0 
+                ? 'O seu período de acesso ao Clima Gest PRO chegou ao fim. Renove ou escolha um plano.' 
+                : 'Faça um upgrade na sua conta para estender seu acesso ao sistema.'}
           </p>
-          <div className="space-y-3">
+          {!isBlocked && (
+             <div className="space-y-3">
             <button 
-              onClick={() => {
+              onClick={async () => {
                 const newEnd = new Date();
                 newEnd.setDate(newEnd.getDate() + 30);
-                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), plan: 'mensal', done: true };
-                localStorage.setItem(`profile_${user!.uid}`, JSON.stringify(updated));
-                setProfileSetup(updated);
+                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), subscriptionPlan: 'mensal', done: true };
+                await updateDoc(doc(db, 'users', user!.uid), { trialEnd: updated.trialEnd, subscriptionPlan: updated.subscriptionPlan });
+                setProfileSetup(updated as any);
                 setShowPlans(false);
                 window.alert('Pagamento Mensal Confirmado');
               }}
@@ -459,12 +494,12 @@ export default function App() {
               <span>Mensal</span> <span>R$ 49,90</span>
             </button>
             <button 
-              onClick={() => {
+              onClick={async () => {
                 const newEnd = new Date();
                 newEnd.setDate(newEnd.getDate() + 90);
-                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), plan: 'trimestral', done: true };
-                localStorage.setItem(`profile_${user!.uid}`, JSON.stringify(updated));
-                setProfileSetup(updated);
+                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), subscriptionPlan: 'trimestral', done: true };
+                await updateDoc(doc(db, 'users', user!.uid), { trialEnd: updated.trialEnd, subscriptionPlan: updated.subscriptionPlan });
+                setProfileSetup(updated as any);
                 setShowPlans(false);
                 window.alert('Pagamento Trimestral Confirmado');
               }}
@@ -473,12 +508,12 @@ export default function App() {
               <span>Trimestral</span> <span>R$ 139,90</span>
             </button>
             <button 
-              onClick={() => {
+              onClick={async () => {
                 const newEnd = new Date();
                 newEnd.setDate(newEnd.getDate() + 180);
-                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), plan: 'semestral', done: true };
-                localStorage.setItem(`profile_${user!.uid}`, JSON.stringify(updated));
-                setProfileSetup(updated);
+                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), subscriptionPlan: 'semestral', done: true };
+                await updateDoc(doc(db, 'users', user!.uid), { trialEnd: updated.trialEnd, subscriptionPlan: updated.subscriptionPlan });
+                setProfileSetup(updated as any);
                 setShowPlans(false);
                 window.alert('Pagamento Semestral Confirmado');
               }}
@@ -487,12 +522,12 @@ export default function App() {
               <span>Semestral</span> <span>R$ 259,90</span>
             </button>
             <button 
-              onClick={() => {
+              onClick={async () => {
                 const newEnd = new Date();
                 newEnd.setDate(newEnd.getDate() + 365);
-                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), plan: 'anual', done: true };
-                localStorage.setItem(`profile_${user!.uid}`, JSON.stringify(updated));
-                setProfileSetup(updated);
+                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), subscriptionPlan: 'anual', done: true };
+                await updateDoc(doc(db, 'users', user!.uid), { trialEnd: updated.trialEnd, subscriptionPlan: updated.subscriptionPlan });
+                setProfileSetup(updated as any);
                 setShowPlans(false);
                 window.alert('Pagamento Anual Confirmado');
               }}
@@ -501,7 +536,8 @@ export default function App() {
               <span>Anual (Melhor Custo)</span> <span className="text-blue-200">R$ 479,00</span>
             </button>
           </div>
-          {remainingDays <= 0 && (
+          )}
+          {(remainingDays <= 0 || isBlocked) && (
             <button onClick={() => signOut(auth)} className="mt-6 text-sm text-slate-400 hover:text-slate-600 font-semibold cursor-pointer">Sair da conta</button>
           )}
         </div>
@@ -604,6 +640,17 @@ export default function App() {
             >
               <Package size={14} /> Estoque
             </button>
+            {isAdmin && (
+               <button
+                 id="tab-admin"
+                 onClick={() => setActiveTab('admin')}
+                 className={`flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg transition-all cursor-pointer ${
+                   activeTab === 'admin' ? 'bg-white text-purple-600 shadow-3xs' : 'text-slate-500 hover:text-purple-600'
+                 }`}
+               >
+                 <ShieldCheck size={14} /> Administração
+               </button>
+            )}
           </nav>
 
           {/* Quick status indicators (Offline ready + Date) */}
@@ -948,6 +995,18 @@ export default function App() {
               />
             </motion.div>
           )}
+
+          {activeTab === 'admin' && isAdmin && (
+            <motion.div
+              key="admin"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+            >
+              <AdminPanel currentUserEmail={user?.email || null} />
+            </motion.div>
+          )}
         </AnimatePresence>
       </main>
 
@@ -1007,6 +1066,17 @@ export default function App() {
           <Package size={18} />
           <span className="text-[9px]">Estoque</span>
         </button>
+        {isAdmin && (
+          <button
+            onClick={() => setActiveTab('admin')}
+            className={`flex flex-col items-center gap-0.5 p-2 text-center flex-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'admin' ? 'text-purple-600 font-bold' : 'text-slate-400 hover:text-purple-600'
+            }`}
+          >
+            <ShieldCheck size={18} />
+            <span className="text-[9px]">Admin</span>
+          </button>
+        )}
       </nav>
     </div>
   );

@@ -7,11 +7,24 @@
       "properties": {
         "email": { "type": "string" },
         "name": { "type": "string" },
-        "subscriptionPlan": { "type": "string", "enum": ["free", "monthly", "quarterly", "semiannual", "annual"] },
-        "subscriptionStatus": { "type": "string", "enum": ["active", "inactive", "trial"] },
+        "subscriptionPlan": { "type": "string", "enum": ["free", "trial", "mensal", "trimestral", "semestral", "anual"] },
+        "subscriptionStatus": { "type": "string", "enum": ["active", "inactive", "trial", "blocked"] },
+        "trialEnd": { "type": "string", "format": "date-time" },
+        "company": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["email", "subscriptionPlan", "subscriptionStatus", "createdAt"]
+      "required": ["email", "name", "createdAt"]
+    },
+    "AdminProfile": {
+      "title": "AdminProfile",
+      "description": "An admin user of the system",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "level": { "type": "string", "enum": ["master", "full", "viewer"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "level", "createdAt"]
     },
     "Client": {
       "title": "Client",
@@ -138,6 +151,10 @@
     }
   },
   "firestore": {
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminProfile" },
+      "description": "System Administrators"
+    },
     "/users/{userId}": {
       "schema": { "$ref": "#/entities/UserProfile" },
       "description": "Professional user profiles"
