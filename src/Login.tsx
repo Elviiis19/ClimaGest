@@ -252,7 +252,7 @@ export function LoginScreen() {
             
             {mode === 'register' && (
               <p className="text-[10px] text-center text-slate-400 leading-relaxed font-medium mt-4">
-                Ao criar sua conta, você recebe um <strong className="text-slate-600">teste de 7 dias grátis</strong>.<br/>
+                Ao criar sua conta, você recebe um <strong className="text-slate-600">teste de 3 dias grátis</strong>.<br/>
                 Após, escolha um plano (Mensal, Trimestral, Semestral ou Anual).
               </p>
             )}

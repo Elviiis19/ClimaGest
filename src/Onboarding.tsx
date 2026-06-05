@@ -8,7 +8,7 @@ export function OnboardingScreen({
   onComplete 
 }: { 
   user: User, 
-  onComplete: (data: { name: string, company: string, done: boolean }) => void 
+  onComplete: (data: { name: string, company: string, done: boolean, trialEnd?: string, plan?: string }) => void 
 }) {
   const [name, setName] = useState(user.displayName || '');
   const [company, setCompany] = useState('');
@@ -17,7 +17,15 @@ export function OnboardingScreen({
     e.preventDefault();
     if (!name || !company) return;
     
-    const profileData = { name, company, done: true };
+    const end = new Date();
+    end.setDate(end.getDate() + 3);
+    const profileData = { 
+      name, 
+      company, 
+      done: true,
+      trialEnd: end.toISOString(),
+      plan: 'trial' // Initial plan is trial
+    };
     localStorage.setItem(`profile_${user.uid}`, JSON.stringify(profileData));
     onComplete(profileData);
   };

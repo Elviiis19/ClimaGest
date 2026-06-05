@@ -60,7 +60,8 @@ const LOCAL_STORAGE_KEYS = {
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [profileSetup, setProfileSetup] = useState<{name: string, company: string, done: boolean} | null>(null);
+  const [profileSetup, setProfileSetup] = useState<{name: string, company: string, done: boolean, trialEnd?: string, plan?: string} | null>(null);
+  const [showPlans, setShowPlans] = useState(false);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (currentUser) => {
@@ -388,8 +389,128 @@ export default function App() {
     return <OnboardingScreen user={user} onComplete={setProfileSetup} />;
   }
 
+  let remainingDays = 0;
+  let alertLevel = null; // 'red', 'orange', 'yellow', 'none'
+  if (profileSetup?.trialEnd) {
+    const end = new Date(profileSetup.trialEnd);
+    const today = new Date();
+    const diffTime = end.getTime() - today.getTime();
+    remainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  if (remainingDays <= 0 || showPlans) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative z-50">
+        <div className="max-w-md w-full bg-white rounded-3xl p-8 border border-slate-200 shadow-xl text-center relative">
+          {showPlans && remainingDays > 0 && (
+            <button 
+              onClick={() => setShowPlans(false)} 
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 w-8 h-8 rounded-full flex items-center justify-center font-bold cursor-pointer"
+            >
+              ✕
+            </button>
+          )}
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-50 text-blue-600 mb-4">
+            <AlertTriangle size={32} className={remainingDays <= 0 ? "text-red-500" : "text-blue-500"} />
+          </div>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight mb-2">
+            {remainingDays <= 0 ? 'Sua Assinatura Expirou' : 'Escolha seu Plano'}
+          </h1>
+          <p className="text-slate-500 font-medium text-sm leading-relaxed mb-6">
+            {remainingDays <= 0 
+              ? 'O seu período de acesso ao Clima Gest PRO chegou ao fim. Renove ou escolha um plano.' 
+              : 'Faça um upgrade na sua conta para estender seu acesso ao sistema.'}
+          </p>
+          <div className="space-y-3">
+            <button 
+              onClick={() => {
+                const newEnd = new Date();
+                newEnd.setDate(newEnd.getDate() + 30);
+                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), plan: 'mensal', done: true };
+                localStorage.setItem(`profile_${user!.uid}`, JSON.stringify(updated));
+                setProfileSetup(updated);
+                setShowPlans(false);
+                window.alert('Pagamento Mensal Confirmado');
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-colors text-sm flex justify-between items-center cursor-pointer"
+            >
+              <span>Mensal</span> <span>R$ 49,90</span>
+            </button>
+            <button 
+              onClick={() => {
+                const newEnd = new Date();
+                newEnd.setDate(newEnd.getDate() + 90);
+                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), plan: 'trimestral', done: true };
+                localStorage.setItem(`profile_${user!.uid}`, JSON.stringify(updated));
+                setProfileSetup(updated);
+                setShowPlans(false);
+                window.alert('Pagamento Trimestral Confirmado');
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-colors text-sm flex justify-between items-center cursor-pointer"
+            >
+              <span>Trimestral</span> <span>R$ 139,90</span>
+            </button>
+            <button 
+              onClick={() => {
+                const newEnd = new Date();
+                newEnd.setDate(newEnd.getDate() + 180);
+                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), plan: 'semestral', done: true };
+                localStorage.setItem(`profile_${user!.uid}`, JSON.stringify(updated));
+                setProfileSetup(updated);
+                setShowPlans(false);
+                window.alert('Pagamento Semestral Confirmado');
+              }}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-colors text-sm flex justify-between items-center cursor-pointer"
+            >
+              <span>Semestral</span> <span>R$ 259,90</span>
+            </button>
+            <button 
+              onClick={() => {
+                const newEnd = new Date();
+                newEnd.setDate(newEnd.getDate() + 365);
+                const updated = { ...profileSetup!, trialEnd: newEnd.toISOString(), plan: 'anual', done: true };
+                localStorage.setItem(`profile_${user!.uid}`, JSON.stringify(updated));
+                setProfileSetup(updated);
+                setShowPlans(false);
+                window.alert('Pagamento Anual Confirmado');
+              }}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition-colors text-sm flex justify-between items-center cursor-pointer shadow-md"
+            >
+              <span>Anual (Melhor Custo)</span> <span className="text-blue-200">R$ 479,00</span>
+            </button>
+          </div>
+          {remainingDays <= 0 && (
+            <button onClick={() => signOut(auth)} className="mt-6 text-sm text-slate-400 hover:text-slate-600 font-semibold cursor-pointer">Sair da conta</button>
+          )}
+        </div>
+      </div>
+    );
+  }
+    
+  if (profileSetup?.trialEnd) {
+    if (remainingDays <= 3) {
+      alertLevel = 'red';
+    } else if (remainingDays <= 7) {
+      alertLevel = 'orange';
+    } else if (remainingDays <= 15) {
+      alertLevel = 'yellow';
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans pb-24 md:pb-6" id="applet-viewport">
+      {/* SUBSCRIPTION NOTIFICATION BAR */}
+      {alertLevel && (
+        <div className={`w-full py-2 px-4 text-center text-xs font-bold shadow-sm ${
+          alertLevel === 'red' ? 'bg-red-500 text-white' : 
+          alertLevel === 'orange' ? 'bg-orange-500 text-white' : 
+          'bg-yellow-400 text-yellow-900'
+        }`}>
+           Atenção: Restam {remainingDays} {remainingDays === 1 ? 'dia' : 'dias'} da sua assinatura atual.  
+           <button onClick={() => setShowPlans(true)} className="ml-2 underline hover:opacity-80 cursor-pointer">Faça o upgrade agora.</button>
+        </div>
+      )}
+
       {/* HEADER NAVBAR */}
       <header className="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-2xs px-4 py-3 md:py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
