@@ -5,7 +5,8 @@ import {
   GoogleAuthProvider, 
   FacebookAuthProvider, 
   signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
+  createUserWithEmailAndPassword,
+  updateProfile
 } from 'firebase/auth';
 import { ShieldCheck, Calendar, Users, FileText, ArrowRight, CheckCircle2, AlertTriangle, Mail, Lock } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -51,7 +52,8 @@ export function LoginScreen() {
       if (mode === 'login') {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(userCredential.user, { displayName: name });
       }
     } catch (e: any) {
       console.error(e);
@@ -61,8 +63,10 @@ export function LoginScreen() {
         setError('Este e-mail já está cadastrado.');
       } else if (e.code === 'auth/weak-password') {
         setError('A senha deve ter pelo menos 6 caracteres.');
+      } else if (e.code === 'auth/operation-not-allowed') {
+        setError('O login por e-mail e senha não está habilitado no Firebase (habilite no Console).');
       } else {
-        setError('Erro de autenticação. Tente novamente.');
+        setError(`Erro: ${e.code || e.message || 'Erro de autenticação.'}`);
       }
       setLoading(false);
     }
